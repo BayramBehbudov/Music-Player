@@ -1,0 +1,165 @@
+import { useEffect, useRef, useState } from "react";
+import style from "./app.module.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCaretLeft,
+  faCaretRight,
+  faHeart,
+  faMagnifyingGlass,
+  faPause,
+  faPlay,
+  faRepeat,
+  faShuffle,
+} from "@fortawesome/free-solid-svg-icons";
+import { faHeart as faRegularHeart } from "@fortawesome/free-regular-svg-icons";
+import Musics from "./musics";
+
+function App() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [play, setPlay] = useState(false);
+  const [loading, setLoading] = useState(0);
+  const audioRef = useRef(new Audio());
+  const [like, setLike] = useState(false);
+
+  const { name, cover, url, singer, isLiked } = Musics[currentIndex];
+
+  useEffect(() => {
+    setLike(isLiked);
+    audioRef.current.pause();
+    audioRef.current = new Audio(url);
+    audioRef.current.addEventListener("timeupdate", updateTime);
+    audioRef.current.addEventListener("loadedmetadata", () => {
+      setLoading(0);
+    });
+    if (play) {
+      audioRef.current.play();
+    }
+    // audioRef.current.volume=0.5
+    audioRef.current.playbackRate = 10; // Oynatma hızını 1.5x olarak ayarlar
+
+    console.log(audioRef.current.ended);
+    return () => {
+      audioRef.current.pause();
+      audioRef.current.removeEventListener("timeupdate", updateTime);
+    };
+  }, [currentIndex]);
+  useEffect(() => {
+    if (play) {
+      audioRef.current.play();
+    } else {
+      audioRef.current.pause();
+    }
+  }, [play]);
+
+  const updateTime = () => {
+    setLoading(
+      (audioRef.current.currentTime / audioRef.current.duration) * 100
+    );
+  };
+
+  const handlePlayPause = () => {
+    setPlay(!play);
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % Musics.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? Musics.length - 1 : prevIndex - 1
+    );
+  };
+  const handleLikeToggle = () => {
+    setLike(!like);
+    Musics[currentIndex].isLiked = !like;
+  };
+
+  useEffect(() => {
+  audioRef.current.ended &&
+    setCurrentIndex((prev) => (prev + 1) % Musics.length);
+  }, [audioRef.current.currentTime]);
+
+  function formatTime(durationInSeconds) {
+    const minutes = Math.floor(durationInSeconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = Math.floor(durationInSeconds % 60)
+      .toString()
+      .padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  }
+  return (
+    <div className={style.container}>
+      <div className={style.musicContainer}>
+        <div className={style.imgContainer}>
+          <img src={cover} alt="cover" />
+        </div>
+        <div className={style.nameContainer}>
+          <div onClick={handleLikeToggle}>
+            {like ? (
+              <FontAwesomeIcon icon={faHeart} className={style.icon} />
+            ) : (
+              <FontAwesomeIcon
+                icon={faRegularHeart}
+                className={style.icon}
+              ></FontAwesomeIcon>
+            )}
+          </div>
+
+          <div className={style.musicName}>
+            <h5>{name}</h5>
+            <h6>{singer}</h6>
+          </div>
+          <FontAwesomeIcon icon={faMagnifyingGlass} className={style.icon} />
+        </div>
+        <div className={style.loader}>
+          <div
+            className={style.loaderIcon}
+            style={{ width: `${loading}%` }}
+          ></div>
+          <div className={style.times}>
+            <p>{formatTime(audioRef.current.currentTime)}</p>
+            <p>
+              {audioRef.current.duration
+                ? formatTime(audioRef.current.duration)
+                : "00:00"}
+            </p>
+          </div>
+        </div>
+
+        <div className={style.actions}>
+          <FontAwesomeIcon icon={faRepeat} className={style.shuffleIcon} />
+          <div className={style.actionsCenter}>
+            <FontAwesomeIcon
+              icon={faCaretLeft}
+              className={style.icon}
+              onClick={handlePrev}
+            />
+            {play ? (
+              <FontAwesomeIcon
+                icon={faPause}
+                className={style.icon}
+                onClick={handlePlayPause}
+              />
+            ) : (
+              <FontAwesomeIcon
+                icon={faPlay}
+                className={style.icon}
+                onClick={handlePlayPause}
+              />
+            )}
+            <FontAwesomeIcon
+              icon={faCaretRight}
+              className={style.icon}
+              onClick={handleNext}
+            />
+          </div>
+          <FontAwesomeIcon icon={faShuffle} className={style.shuffleIcon} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
