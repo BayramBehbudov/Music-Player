@@ -1,4 +1,4 @@
-import AllMusics from "./MusicsConfig";
+import AllMusics from "./MusicsConfig.js";
 
 const FormattedMusic = []
 
