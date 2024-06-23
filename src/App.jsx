@@ -15,10 +15,11 @@ import {
   faVolumeXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faRegularHeart } from "@fortawesome/free-regular-svg-icons";
-import Musics from "./musics";
+import Musics from "../config/musics";
 
 function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [shuffle, setShuffle] = useState(false);
   const [play, setPlay] = useState(false);
   const [seekTime, setSeekTime] = useState(0);
   const audioRef = useRef(new Audio());
@@ -76,6 +77,7 @@ function App() {
     setLike(!like);
     Musics[currentIndex].isLiked = !like;
   };
+
   audioRef.current.addEventListener("volumechange", function () {
     mute && setMute(false);
   });
@@ -85,7 +87,9 @@ function App() {
     audioRef.current.playbackRate = playBackRate;
     audioRef.current.muted = mute;
     if (audioRef.current.currentTime === audioRef.current.duration) {
-      setCurrentIndex((prev) => (prev + 1) % Musics.length);
+      shuffle
+        ? setCurrentIndex(Math.floor(Math.random() * Musics.length))
+        : setCurrentIndex((prev) => (prev + 1) % Musics.length);
     }
     setSeekTime(audioRef.current.currentTime);
   }, [audioRef.current.currentTime]);
@@ -99,6 +103,7 @@ function App() {
       .padStart(2, "0");
     return `${minutes}:${seconds}`;
   }
+
   return (
     <div className={style.container}>
       <div className={style.musicContainer}>
@@ -203,6 +208,7 @@ function App() {
               style={loop && { color: "blue" }}
               onClick={() => {
                 setLoop(!loop);
+                setShuffle(false);
               }}
             />
             <div className={style.actionsCenter}>
@@ -224,7 +230,15 @@ function App() {
                 onClick={handleNext}
               />
             </div>
-            <FontAwesomeIcon icon={faShuffle} className={style.icon} />
+            <FontAwesomeIcon
+              icon={faShuffle}
+              className={style.icon}
+              onClick={() => {
+                setShuffle(!shuffle);
+                setLoop(false);
+              }}
+              style={shuffle && { color: "blue" }}
+            />
           </div>
         </div>
       </div>
