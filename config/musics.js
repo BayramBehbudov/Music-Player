@@ -1,8 +1,7 @@
 import AllMusics from "./MusicsConfig.js";
 
 const FormattedMusic = []
-
-AllMusics.map((music) => {
+await AllMusics.map((music) => {
     if (music.name && music.artists[0].name && music.preview_url && music.album.images[0].url && music.name.length <= 25 && music.artists[0].name.length <= 25) {
         FormattedMusic.push({
             name: music.name,
